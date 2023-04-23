@@ -6,7 +6,6 @@ import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -19,6 +18,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import de.oceanlabs.mcp.mcinjector.data.Exclusions;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -50,6 +50,7 @@ public class MCInjectorImpl
             Path accIn, Path accOut,
             Path ctrIn, Path ctrOut,
             Path excIn, Path excOut,
+            Path exclusions,
             LVTNaming naming)
         throws IOException
     {
@@ -66,7 +67,7 @@ public class MCInjectorImpl
         MCInjectorImpl mci = new MCInjectorImpl();
         mci.naming = naming;
 
-        mci.processJar(in, out);
+        mci.processJar(in, out, exclusions);
 
         if (accOut != null)
             Access.INSTANCE.dump(accOut);
@@ -80,8 +81,9 @@ public class MCInjectorImpl
 
     private MCInjectorImpl(){}
 
-    private void processJar(Path inFile, Path outFile) throws IOException
+    private void processJar(Path inFile, Path outFile, Path exclusions) throws IOException
     {
+        List<String> exclClasses = Exclusions.INSTANCE.load(exclusions);
         Set<String> entries = new HashSet<>();
         try (ZipInputStream inJar = new ZipInputStream(Files.newInputStream(inFile)))
         {
@@ -113,9 +115,9 @@ public class MCInjectorImpl
 
                     byte[] entryData = entryBuffer.toByteArray();
 
-                    boolean mojang = entryName.startsWith("net/minecraft/") || entryName.startsWith("com/mojang/");
-
-                    if (entryName.endsWith(".class") && mojang) //TODO: Remove this hardcoding? SRG input? process all?
+                    // Process all class files, except those in the excluded class list, regardless of packaging.
+                    // Anything else unwanted will have already been removed via JarSplitter.
+                    if (entryName.endsWith(".class") && exclClasses.stream().noneMatch(entryName::equals))
                     {
                         MCInjector.LOG.log(Level.INFO, "Processing " + entryName);
 

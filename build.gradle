@@ -10,7 +10,7 @@ apply plugin: 'maven'
 apply plugin: 'maven-publish'
 
 group = 'de.oceanlabs.mcp'
-version = gitVersion()
+version = '4.1-am'
 targetCompatibility = sourceCompatibility = compileJava.targetCompatibility = compileJava.sourceCompatibility = '1.8'
 
 ext {
@@ -58,6 +58,12 @@ if (changelog.exists()) {
     artifacts.archives CHANGELOG
 }
 
+task testInject(type: JavaExec) {
+    main = 'de.oceanlabs.mcp.mcinjector.MCInjector'
+    classpath = sourceSets.main.runtimeClasspath
+    args('--in', 'test\\client.jar', '--out', 'test\\inject.jar', '--exc', 'test\\exceptions.txt', '--exclusions', 'test\\exclusions.txt')
+}
+
 dependencies {
     compile 'org.ow2.asm:asm:6.1-beta2'
     compile 'org.ow2.asm:asm-tree:6.1-beta2'
@@ -75,17 +81,8 @@ publishing {
                 artifact source: CHANGELOG, classifier: 'changelog'
             pom {
                 name = 'MCInjector'
-                description = 'Utility for cleaning up Minecraft jar files for decompolation'
-                url = 'https://github.com/ModCoderPack/MCInjector'
-                scm {
-                    url = 'https://github.com/ModCoderPack/MCInjector'
-                    connection = 'scm:git:git://github.com/ModCoderPack/MCInjector.git'
-                    developerConnection = 'scm:git:git@github.com:ModCoderPack/MCInjector.git'
-                }
-                issueManagement {
-                    system = 'github'
-                    url = 'https://github.com/ModCoderPack/MCInjector/issues'
-                }
+                description = 'AncientMC implementation of MCInjector, built specifically for the Ancient Coder Pack (ACP) toolchain.'
+                url = 'https://github.com/AncientMC/MCInjector'
 
                 developers {
                     developer {
@@ -125,7 +122,7 @@ publishing {
                 }
                 url 'http://files.minecraftforge.net/maven/manage/upload'
             } else {
-                url 'file://' + project.file('repo').getAbsolutePath()
+                url 'D:\\Programs\\Projects\\AncientMC\\ancientmc-maven\\'
             }
         }
     }
