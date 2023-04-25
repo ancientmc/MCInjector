@@ -28,7 +28,7 @@ public class MCInjector
     private Path excIn, excOut;
     private Path accIn, accOut;
     private Path ctrIn, ctrOut;
-    private Path exclusions;
+    private Path blacklist;
     private LVTNaming lvt;
 
     public MCInjector(Path fileIn, Path fileOut)
@@ -114,8 +114,8 @@ public class MCInjector
         return this;
     }
 
-    public MCInjector exclusions(Path exclusions) {
-        this.exclusions = exclusions;
+    public MCInjector blacklist(Path blacklist) {
+        this.blacklist = blacklist;
         return this;
     }
 
@@ -126,7 +126,7 @@ public class MCInjector
                                accIn, accOut,
                                ctrIn, ctrOut,
                                excIn, excOut,
-                               exclusions,
+                               blacklist,
                                lvt);
     }
 
@@ -179,7 +179,7 @@ public class MCInjector
         OptionSpec<Path>      accOut = parser.accepts("accOut").withRequiredArg().withValuesConvertedBy(PATH_ARG);
         OptionSpec<Path>      ctr    = parser.accepts("ctr")   .withRequiredArg().withValuesConvertedBy(PATH_ARG);
         OptionSpec<Path>      ctrOut = parser.accepts("ctrOut").withRequiredArg().withValuesConvertedBy(PATH_ARG);
-        OptionSpec<Path>      exclusions = parser.accepts("exclusions").withRequiredArg().withValuesConvertedBy(PATH_ARG);
+        OptionSpec<Path>      blacklist = parser.accepts("blacklist").withRequiredArg().withValuesConvertedBy(PATH_ARG);
         OptionSpec<Level>     logLvl = parser.accepts("level") .withRequiredArg().withValuesConvertedBy(LEVEL_ARG).defaultsTo(Level.INFO);
         OptionSpec<LVTNaming> lvt    = parser.accepts("lvt").withRequiredArg().ofType(LVTNaming.class).defaultsTo(LVTNaming.STRIP);
 
@@ -211,7 +211,7 @@ public class MCInjector
             LOG.info("              " + o.valueOf(accOut));
             LOG.info("Constructors: " + o.valueOf(ctr));
             LOG.info("              " + o.valueOf(ctrOut));
-            LOG.info("Excluded classes: " + o.valueOf(exclusions));
+            LOG.info("Blacklisted classes: " + o.valueOf(blacklist));
             LOG.info("LVT:          " + o.valueOf(lvt));
 
             try
@@ -226,7 +226,7 @@ public class MCInjector
                     .accessOut(o.valueOf(accOut))
                     .constructors(o.valueOf(ctr))
                     .constructorsOut(o.valueOf(ctrOut))
-                    .exclusions(o.valueOf(exclusions))
+                    .blacklist(o.valueOf(blacklist))
                     .process();
             }
             catch (Exception e)

@@ -18,7 +18,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import de.oceanlabs.mcp.mcinjector.data.Exclusions;
+import de.oceanlabs.mcp.mcinjector.data.Blacklist;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -50,7 +50,7 @@ public class MCInjectorImpl
             Path accIn, Path accOut,
             Path ctrIn, Path ctrOut,
             Path excIn, Path excOut,
-            Path exclusions,
+            Path blacklist,
             LVTNaming naming)
         throws IOException
     {
@@ -67,7 +67,7 @@ public class MCInjectorImpl
         MCInjectorImpl mci = new MCInjectorImpl();
         mci.naming = naming;
 
-        mci.processJar(in, out, exclusions);
+        mci.processJar(in, out, blacklist);
 
         if (accOut != null)
             Access.INSTANCE.dump(accOut);
@@ -81,9 +81,9 @@ public class MCInjectorImpl
 
     private MCInjectorImpl(){}
 
-    private void processJar(Path inFile, Path outFile, Path exclusions) throws IOException
+    private void processJar(Path inFile, Path outFile, Path blacklist) throws IOException
     {
-        List<String> exclClasses = Exclusions.INSTANCE.load(exclusions);
+        List<String> exclClasses = Blacklist.INSTANCE.load(blacklist);
         Set<String> entries = new HashSet<>();
         try (ZipInputStream inJar = new ZipInputStream(Files.newInputStream(inFile)))
         {
@@ -115,7 +115,7 @@ public class MCInjectorImpl
 
                     byte[] entryData = entryBuffer.toByteArray();
 
-                    // Process all class files, except those in the excluded class list, regardless of packaging.
+                    // Process all class files, except those in the blacklisted class list, regardless of packaging.
                     // Anything else unwanted will have already been removed via JarSplitter.
                     if (entryName.endsWith(".class") && exclClasses.stream().noneMatch(entryName::equals))
                     {
